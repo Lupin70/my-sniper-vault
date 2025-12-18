@@ -73,7 +73,7 @@ with st.sidebar:
     
     st.divider()
     st.header("📖 GUIDA RAPIDA")
-    st.markdown("1. Seleziona Lega\n2. Controlla Medie\n3. Salva nel Registro")
+    st.markdown("1. Seleziona Lega\n2. Controlla Medie Corner\n3. Salva nel Registro")
 
 # --- DASHBOARD YIELD ---
 if not df_perf.empty:
@@ -81,7 +81,6 @@ if not df_perf.empty:
     cols = st.columns(4)
     for i in range(min(4, len(df_perf))):
         row = df_perf.iloc[i]
-        # Confronto con il tuo yield storico del 19.7%
         cols[i].metric(row['Lega'], f"{row['Yield']}%", f"{row['Yield']-19.7:.1f}%")
 
 st.divider()
@@ -132,27 +131,27 @@ with tab2:
             st.rerun()
 
 with tab3:
-    st.subheader("📜 GUIDA TECNICA & LEGENDA")
+    st.subheader("📜 GUIDA TECNICA CORNER")
     col_leg1, col_leg2 = st.columns(2)
     with col_leg1:
         st.markdown(f"""
-        ### ⚽ STRATEGIA GOALMINER
-        * **Target:** Championship (E1).
-        * **Yield Storico:** 19.7%.
-        * **Quota Operativa:** 1.85 - 1.95.
-        * **Mercato:** Over 2.5 Goal / Over 9.5 Corner.
+        ### 🚩 MERCATO CORNER
+        * **Focus:** Calci d'angolo totali (Over 9.5).
+        * **Target Campionato:** Championship (E1).
+        * **Yield di Riferimento:** 19.7%.
+        * **Range Quota Corner:** 1.85 - 1.95.
 
-        ### 🚩 LEGENDA CORNER
-        * **Media Squadra:** Numero medio di corner totali (fatti + subiti) nelle partite giocate nella stagione 25/26.
-        * **Media Combinata:** La media aritmetica tra i valori del Team Home e del Team Away.
+        ### 📊 METRICHE
+        * **Media Squadra:** Corner totali registrati nella stagione 25/26 (fatti + subiti).
+        * **Media Combinata:** Somma delle medie diviso due. Parametro chiave per l'ingresso.
         """)
     with col_leg2:
         st.markdown("""
-        ### 🚦 SEGNALI OPERATIVI
-        * **🔥 GOLD:** Media Combinata ≥ 10.5 e medie singole entrambe ≥ 9.5. Segnale ad alta confidenza.
-        * **⚖️ SILVER:** Media Combinata ≥ 9.5. Segnale standard conforme alla strategia.
-        * **❌ NO BET:** Media Combinata < 9.5. Rischio elevato di basso volume offensivo.
+        ### 🚦 SEGNALI OPERATIVI CORNER
+        * **🔥 GOLD:** Combinata ≥ 10.5 | Entrambe le squadre ≥ 9.5.
+        * **⚖️ SILVER:** Combinata ≥ 9.5 (Conforme alla strategia).
+        * **❌ NO BET:** Combinata < 9.5.
 
-        ### 🏦 GESTIONE FINANCE
-        * **Stake suggerito:** 2% del bankroll per mantenere la sostenibilità dello yield nel lungo periodo.
+        ### 🏦 RISK MANAGEMENT
+        * **Stake:** 2% per preservare il bankroll e massimizzare lo yield nel lungo periodo.
         """)
