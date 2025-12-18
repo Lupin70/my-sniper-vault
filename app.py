@@ -8,16 +8,6 @@ from datetime import datetime
 # --- CONFIGURAZIONE PAGINA ---
 st.set_page_config(page_title="Sniper Tactical Vault v7", layout="wide", page_icon="🎯")
 
-# --- FUNZIONE TELEGRAM ---
-def send_telegram_message(token, chat_id, message):
-    if token and chat_id:
-        url = f"https://api.telegram.org/bot{token}/sendMessage"
-        payload = {"chat_id": chat_id, "text": message, "parse_mode": "Markdown"}
-        try:
-            requests.post(url, json=payload, timeout=5)
-        except Exception as e:
-            st.error(f"Errore invio Telegram: {e}")
-
 # --- CSS DARK & TACTICAL ---
 st.markdown("""
     <style>
@@ -74,7 +64,7 @@ def scan_and_load_data():
 st.title("🎯 SNIPER TACTICAL VAULT v7")
 df_perf, medie_squadre, league_teams_map = scan_and_load_data()
 
-# --- SIDEBAR: FINANCE & TELEGRAM ---
+# --- SIDEBAR: FINANCE ---
 with st.sidebar:
     st.header("🏦 FINANCE")
     bankroll = st.number_input("Bankroll Totale (€)", value=1000.0)
@@ -82,13 +72,8 @@ with st.sidebar:
     st.metric("PUNTATA FISSA", f"{current_stake:.2f} €")
     
     st.divider()
-    st.header("🤖 TELEGRAM BOT")
-    bot_token = st.text_input("Bot Token", type="password", help="Ottienilo da @BotFather")
-    chat_id = st.text_input("Chat ID", help="Ottienilo da @userinfobot")
-    
-    st.divider()
-    st.header("📖 GUIDA")
-    st.markdown("1. Seleziona Lega\n2. Controlla Medie\n3. Salva & Ricevi Alert")
+    st.header("📖 GUIDA RAPIDA")
+    st.markdown("1. Seleziona Lega\n2. Controlla Medie\n3. Salva nel Registro")
 
 # --- DASHBOARD YIELD ---
 if not df_perf.empty:
@@ -96,6 +81,7 @@ if not df_perf.empty:
     cols = st.columns(4)
     for i in range(min(4, len(df_perf))):
         row = df_perf.iloc[i]
+        # Confronto con il tuo yield storico del 19.7%
         cols[i].metric(row['Lega'], f"{row['Yield']}%", f"{row['Yield']-19.7:.1f}%")
 
 st.divider()
@@ -124,18 +110,11 @@ with tab1:
         st.write("---")
         quota = st.number_input("Quota Rilevata", value=1.85, step=0.01)
 
-        if st.button("🚀 REGISTRA & INVIA ALERT TELEGRAM"):
-            # 1. Salva nel CSV
+        if st.button("🚀 REGISTRA MATCH NEL VAULT"):
             df_h = pd.read_csv(HISTORY_FILE)
             new_bet = {'Data': datetime.now().strftime("%d/%m"), 'Campionato': sel_league, 'Match': f"{casa} vs {ospite}", 'Media': round(m_comb, 2), 'Quota': quota, 'Stake': current_stake, 'Status': 'Pending', 'Profitto': 0.0}
             pd.concat([df_h, pd.DataFrame([new_bet])], ignore_index=True).to_csv(HISTORY_FILE, index=False)
-            
-            # 2. Crea Messaggio Telegram
-            segnali = "🔥 GOLD" if m_comb >= 10.5 and m_h >= 9.5 and m_o >= 9.5 else "⚖️ SILVER"
-            msg = f"🎯 *SNIPER ALERT*\n\n⚽️ {casa} vs {ospite}\n🏆 {sel_league}\n📊 Media: {m_comb:.2f}\n⭐ Segnale: {segnali}\n💰 Stake: {current_stake}€\n📈 Quota: {quota}"
-            
-            send_telegram_message(bot_token, chat_id, msg)
-            st.success("Match archiviato e Alert Telegram inviato!")
+            st.success("Match archiviato con successo!")
 
 with tab2:
     st.subheader("📓 DIARIO REALE")
@@ -151,3 +130,29 @@ with tab2:
                 elif row['Status'] == "❌ LOSE": edited.at[i, 'Profitto'] = -row['Stake']
             edited.to_csv(HISTORY_FILE, index=False)
             st.rerun()
+
+with tab3:
+    st.subheader("📜 GUIDA TECNICA & LEGENDA")
+    col_leg1, col_leg2 = st.columns(2)
+    with col_leg1:
+        st.markdown(f"""
+        ### ⚽ STRATEGIA GOALMINER
+        * **Target:** Championship (E1).
+        * **Yield Storico:** 19.7%.
+        * **Quota Operativa:** 1.85 - 1.95.
+        * **Mercato:** Over 2.5 Goal / Over 9.5 Corner.
+
+        ### 🚩 LEGENDA CORNER
+        * **Media Squadra:** Numero medio di corner totali (fatti + subiti) nelle partite giocate nella stagione 25/26.
+        * **Media Combinata:** La media aritmetica tra i valori del Team Home e del Team Away.
+        """)
+    with col_leg2:
+        st.markdown("""
+        ### 🚦 SEGNALI OPERATIVI
+        * **🔥 GOLD:** Media Combinata ≥ 10.5 e medie singole entrambe ≥ 9.5. Segnale ad alta confidenza.
+        * **⚖️ SILVER:** Media Combinata ≥ 9.5. Segnale standard conforme alla strategia.
+        * **❌ NO BET:** Media Combinata < 9.5. Rischio elevato di basso volume offensivo.
+
+        ### 🏦 GESTIONE FINANCE
+        * **Stake suggerito:** 2% del bankroll per mantenere la sostenibilità dello yield nel lungo periodo.
+        """)
